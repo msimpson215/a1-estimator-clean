@@ -19,9 +19,8 @@
             overflow: hidden;
         }
 
-        /* Top Title - Nailed the font and spacing */
         #status-text {
-            margin-bottom: 30px;
+            margin-bottom: 40px;
             font-size: 1.2rem;
             letter-spacing: 2px;
             font-weight: 300;
@@ -46,7 +45,6 @@
             z-index: 2;
         }
 
-        /* The Sun Halo */
         .orb-glow {
             position: absolute;
             top: 0;
@@ -55,18 +53,17 @@
             bottom: 0;
             border-radius: 50%;
             background: #ffcc00;
-            filter: blur(40px);
+            filter: blur(45px);
             opacity: 0.3;
             transition: opacity 0.5s ease;
         }
 
-        /* Breathes only when AI is speaking */
+        /* Movement only during AI speech */
         body.speaking .orb-glow {
             opacity: 0.8;
             animation: breathe 2.5s infinite ease-in-out;
         }
 
-        /* Solid and still when Joe is talking (Listening) */
         body.listening .orb-glow {
             opacity: 0.6;
             animation: none;
@@ -74,18 +71,18 @@
 
         @keyframes breathe {
             0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.15); }
+            50% { transform: scale(1.18); }
         }
 
-        /* Branding at the bottom instead of the greeting text */
+        /* Branding moved further down for better spacing */
         #branding-footer {
             position: absolute;
-            bottom: 40px;
+            bottom: 30px; 
             width: 100%;
-            font-size: 1rem;
-            color: rgba(255, 204, 0, 0.7);
+            font-size: 0.95rem;
+            color: rgba(255, 204, 0, 0.6);
             text-align: center;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
             font-weight: 400;
         }
     </style>
@@ -94,7 +91,7 @@
 
     <div id="status-text">TALK TO OUR AI TEAM MEMBER</div>
 
-    <div id="orb-container" onclick="toggleAssistant()">
+    <div id="orb-container" onclick="startConnection()">
         <div class="orb"></div>
         <div class="orb-glow"></div>
     </div>
@@ -102,48 +99,40 @@
     <div id="branding-footer">A1 PROFESSIONAL ASPHALT & SEALING LLC</div>
 
     <script>
-        // Smart Timer & Greeting Logic
+        // Timing logic for Joe
         function getJoeGreeting() {
             const now = new Date().getTime();
             const twelveHours = 12 * 60 * 60 * 1000; 
             const lastSeen = localStorage.getItem('voxTalk_lastSeen');
             localStorage.setItem('voxTalk_lastSeen', now);
 
-            // If returning within 12 hours, we can stay quiet or use the "Welcome back"
             if (lastSeen && (now - lastSeen < twelveHours)) {
                 return "Welcome back, Joe. Ready to pick up where we left off?";
             }
-            
-            // Initial session greeting
             return "Hello Joe, how can I help you today?";
+        }
+
+        // Mode switcher for the UI
+        function setMode(mode) {
+            document.body.className = mode; 
+            const statusLabel = document.getElementById('status-text');
+            if (mode === 'listening') statusLabel.textContent = "I'M LISTENING...";
+            else if (mode === 'speaking') statusLabel.textContent = "AI TEAM MEMBER SPEAKING";
+            else statusLabel.textContent = "TALK TO OUR AI TEAM MEMBER";
+        }
+
+        // This triggers when Joe clicks the Sun
+        function startConnection() {
+            setMode('listening');
+            // INSERT YOUR WEBRTC INIT CODE HERE
+            console.log("Starting VoxTalk connection...");
         }
 
         window.onload = () => {
             const greeting = getJoeGreeting();
-            // We don't print the greeting now; we just trigger the voice
-            if (greeting && typeof speakText === "function") {
-                setMode('speaking');
-                speakText(greeting); // This assumes your voice function is named speakText
-            }
+            // Once connected, you'll trigger the 'speaking' mode 
+            // and pass 'greeting' to your audio output.
         };
-
-        function setMode(mode) {
-            document.body.className = mode; 
-            const statusLabel = document.getElementById('status-text');
-            
-            if (mode === 'listening') {
-                statusLabel.textContent = "I'M LISTENING...";
-            } else if (mode === 'speaking') {
-                statusLabel.textContent = "AI TEAM MEMBER SPEAKING";
-            } else {
-                statusLabel.textContent = "TALK TO OUR AI TEAM MEMBER";
-            }
-        }
-
-        function toggleAssistant() {
-            // This is where your WebRTC/Voice connection logic triggers
-            setMode('listening');
-        }
     </script>
 </body>
 </html>
