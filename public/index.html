@@ -3,28 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A1 Brain</title>
+    <title>A1 Asphalt - AI Assistant</title>
     <style>
         body {
             margin: 0;
+            padding: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             height: 100vh;
-            background: #1a1a1a; /* Dark Asphalt */
+            background: #1a1a1a; /* Solid Asphalt Black */
             color: #ffcc00; /* Traffic Yellow */
-            /* Elongated, clean font */
-            font-family: 'Segoe UI', 'Impact', sans-serif; 
+            font-family: 'Segoe UI', 'Impact', sans-serif; /* Elongated professional font */
             overflow: hidden;
         }
 
         #status-text {
             margin-bottom: 40px;
-            font-size: 1.5rem; /* Larger than footer */
+            font-size: 1.6rem; /* Bigger as requested */
             letter-spacing: 3px;
+            font-weight: bold;
             text-transform: uppercase;
-            font-weight: 300;
         }
 
         #orb-container {
@@ -39,27 +39,27 @@
             width: 100%;
             height: 100%;
             border-radius: 50%;
-            background: #ffcc00; /* Solid Traffic Yellow */
-            box-shadow: 0 0 40px rgba(255, 204, 0, 0.5);
+            background: #ffcc00; /* Pure Traffic Yellow - No Gold Gradient */
+            box-shadow: 0 0 50px rgba(255, 204, 0, 0.4);
         }
 
-        /* Pulsate only when active */
+        /* Pulsate effect when talking */
         body.speaking .orb {
-            animation: pulse 1.2s infinite alternate ease-in-out;
+            animation: pulse 1.5s infinite alternate ease-in-out;
         }
 
         @keyframes pulse {
-            from { transform: scale(1); }
-            to { transform: scale(1.08); }
+            0% { transform: scale(1); }
+            100% { transform: scale(1.08); }
         }
 
         #footer-brand {
             position: absolute;
             bottom: 30px;
-            font-size: 0.9rem; /* Smaller font */
+            font-size: 0.9rem; /* Smaller than the top text */
             letter-spacing: 2px;
-            opacity: 0.9;
             text-transform: uppercase;
+            font-weight: normal;
         }
     </style>
 </head>
@@ -67,29 +67,34 @@
 
     <div id="status-text">TALK TO OUR AI TEAM MEMBER</div>
 
-    <div id="orb-container" onclick="startAssistant()">
+    <div id="orb-container" onclick="toggleAssistant()">
         <div class="orb"></div>
     </div>
 
     <div id="footer-brand">A1 Professional Asphalt LLC</div>
 
     <script>
-        async function startAssistant() {
-            document.body.className = 'speaking';
-            document.getElementById('status-text').textContent = "LISTENING...";
+        let isActive = false;
 
-            try {
-                // Initial greeting as you requested
-                console.log("Hello, Joe. How can I help you today?"); 
-
-                const response = await fetch('/session');
-                const data = await response.json();
+        async function toggleAssistant() {
+            isActive = !isActive;
+            const status = document.getElementById('status-text');
+            
+            if (isActive) {
+                document.body.className = 'speaking';
+                status.textContent = "LISTENING...";
                 
-                // WebRTC connection logic here...
-                // (Using the same logic that successfully talked before)
-                
-            } catch (err) {
-                document.getElementById('status-text').textContent = "CONNECTION ERROR";
+                // This is where your /session call and WebRTC logic go
+                try {
+                    const response = await fetch('/session');
+                    const data = await response.json();
+                    // WebRTC logic uses data.client_secret.value
+                } catch (e) {
+                    status.textContent = "CONNECTION ERROR";
+                }
+            } else {
+                document.body.className = 'idle';
+                status.textContent = "TALK TO OUR AI TEAM MEMBER";
             }
         }
     </script>
