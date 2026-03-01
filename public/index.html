@@ -2,99 +2,102 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A1 Asphalt - AI Assistant</title>
+    <title>A1 Brain</title>
     <style>
         body {
             margin: 0;
-            padding: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             height: 100vh;
-            background: #1a1a1a; /* Solid Asphalt Black */
+            background-color: #1a1a1a; /* Dark Asphalt */
             color: #ffcc00; /* Traffic Yellow */
-            font-family: 'Segoe UI', 'Impact', sans-serif; /* Elongated professional font */
+            font-family: 'Impact', 'Arial Narrow', sans-serif; /* Elongated Font */
             overflow: hidden;
         }
 
         #status-text {
             margin-bottom: 40px;
-            font-size: 1.6rem; /* Bigger as requested */
-            letter-spacing: 3px;
-            font-weight: bold;
+            font-size: 1.8rem;
+            letter-spacing: 4px;
             text-transform: uppercase;
         }
 
         #orb-container {
-            position: relative;
             width: 250px;
             height: 250px;
             cursor: pointer;
         }
 
         .orb {
-            position: absolute;
             width: 100%;
             height: 100%;
             border-radius: 50%;
-            background: #ffcc00; /* Pure Traffic Yellow - No Gold Gradient */
-            box-shadow: 0 0 50px rgba(255, 204, 0, 0.4);
+            background-color: #ffcc00;
+            /* High Intensity Glow from Screenshot */
+            box-shadow: 0 0 60px rgba(255, 204, 0, 0.8);
         }
 
-        /* Pulsate effect when talking */
-        body.speaking .orb {
-            animation: pulse 1.5s infinite alternate ease-in-out;
+        body.active .orb {
+            animation: pulse 1.2s infinite alternate ease-in-out;
         }
 
         @keyframes pulse {
-            0% { transform: scale(1); }
-            100% { transform: scale(1.08); }
+            from { transform: scale(1); box-shadow: 0 0 60px rgba(255, 204, 0, 0.8); }
+            to { transform: scale(1.08); box-shadow: 0 0 90px rgba(255, 204, 0, 1); }
         }
 
         #footer-brand {
             position: absolute;
             bottom: 30px;
-            font-size: 0.9rem; /* Smaller than the top text */
+            font-size: 0.9rem;
             letter-spacing: 2px;
             text-transform: uppercase;
-            font-weight: normal;
         }
     </style>
 </head>
-<body class="idle">
+<body>
 
     <div id="status-text">TALK TO OUR AI TEAM MEMBER</div>
 
-    <div id="orb-container" onclick="toggleAssistant()">
+    <div id="orb-container" onclick="start()">
         <div class="orb"></div>
     </div>
 
     <div id="footer-brand">A1 Professional Asphalt LLC</div>
 
     <script>
-        let isActive = false;
-
-        async function toggleAssistant() {
-            isActive = !isActive;
-            const status = document.getElementById('status-text');
-            
-            if (isActive) {
-                document.body.className = 'speaking';
-                status.textContent = "LISTENING...";
+        async function start() {
+            document.body.className = 'active';
+            document.getElementById('status-text').textContent = "LISTENING...";
+            try {
+                const r = await fetch('/session');
+                const data = await r.json();
                 
-                // This is where your /session call and WebRTC logic go
-                try {
-                    const response = await fetch('/session');
-                    const data = await response.json();
-                    // WebRTC logic uses data.client_secret.value
-                } catch (e) {
-                    status.textContent = "CONNECTION ERROR";
-                }
-            } else {
-                document.body.className = 'idle';
-                status.textContent = "TALK TO OUR AI TEAM MEMBER";
+                const pc = new RTCPeerConnection();
+                const audio = document.createElement("audio");
+                audio.autoplay = true;
+                pc.ontrack = e => audio.srcObject = e.streams[0];
+
+                const ms = await navigator.mediaDevices.getUserMedia({ audio: true });
+                pc.addTrack(ms.getTracks()[0]);
+
+                const offer = await pc.createOffer();
+                await pc.setLocalDescription(offer);
+
+                const sdpResponse = await fetch(`https://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-12-17`, {
+                    method: "POST",
+                    body: offer.sdp,
+                    headers: { 
+                        Authorization: `Bearer ${data.client_secret.value}`, 
+                        "Content-Type": "application/sdp" 
+                    }
+                });
+
+                await pc.setRemoteDescription({ type: "answer", sdp: await sdpResponse.text() });
+            } catch (e) { 
+                document.getElementById('status-text').textContent = "CONNECTION ERROR"; 
             }
         }
     </script>
