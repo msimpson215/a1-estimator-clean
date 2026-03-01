@@ -58,7 +58,7 @@
             transition: opacity 0.5s ease;
         }
 
-        /* Movement only during AI speech */
+        /* Pulsing only when AI is talking */
         body.speaking .orb-glow {
             opacity: 0.8;
             animation: breathe 2.5s infinite ease-in-out;
@@ -74,7 +74,6 @@
             50% { transform: scale(1.18); }
         }
 
-        /* Branding moved further down for better spacing */
         #branding-footer {
             position: absolute;
             bottom: 30px; 
@@ -99,7 +98,7 @@
     <div id="branding-footer">A1 PROFESSIONAL ASPHALT & SEALING LLC</div>
 
     <script>
-        // Timing logic for Joe
+        // --- 12-Hour Timer Logic for Joe ---
         function getJoeGreeting() {
             const now = new Date().getTime();
             const twelveHours = 12 * 60 * 60 * 1000; 
@@ -112,7 +111,6 @@
             return "Hello Joe, how can I help you today?";
         }
 
-        // Mode switcher for the UI
         function setMode(mode) {
             document.body.className = mode; 
             const statusLabel = document.getElementById('status-text');
@@ -121,17 +119,28 @@
             else statusLabel.textContent = "TALK TO OUR AI TEAM MEMBER";
         }
 
-        // This triggers when Joe clicks the Sun
-        function startConnection() {
-            setMode('listening');
-            // INSERT YOUR WEBRTC INIT CODE HERE
-            console.log("Starting VoxTalk connection...");
+        // --- Forced Microphone Permission & Connection ---
+        async function startConnection() {
+            try {
+                // This line forces the browser to ask for the mic right now
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                setMode('listening');
+                
+                console.log("Microphone access granted. Initializing VoxTalk...");
+                
+                // Once the mic is hot, we run your existing connection logic
+                // initRealtime(stream); 
+                
+            } catch (err) {
+                console.error("Microphone denied or error:", err);
+                document.getElementById('status-text').textContent = "MIC ACCESS REQUIRED";
+            }
         }
 
         window.onload = () => {
+            // Pre-calculate the greeting so it's ready for the voice stream
             const greeting = getJoeGreeting();
-            // Once connected, you'll trigger the 'speaking' mode 
-            // and pass 'greeting' to your audio output.
+            console.log("Ready for Joe. Current Session Greeting: " + greeting);
         };
     </script>
 </body>
