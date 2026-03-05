@@ -19,8 +19,10 @@ app.get('/session', async (req, res) => {
         model: "gpt-4o-realtime-preview-2024-12-17",
         voice: "alloy",
         modalities: ["audio", "text"],
-        // EXACT GREETING, SIMPLE
-        instructions: "You are an AI team member for A1 Professional Asphalt and Concrete. Start every session by saying exactly: \"Hello, I’m an AI team member for A1 Professional Asphalt and Concrete. How can I help you?\" Then wait for the user to speak. Keep responses short and professional."
+        instructions:
+          "You are an AI team member for A1 Professional Asphalt and Concrete. " +
+          "Start every session by saying exactly: \"Hello, I’m an AI team member for A1 Professional Asphalt and Concrete. How can I help you?\" " +
+          "Then wait for the user to speak. Do not repeat the greeting."
       }),
     });
 
